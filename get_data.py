@@ -4,22 +4,22 @@ import pandas as pd
 
 def get_index_constituents(index, bool_all = True):
     if bool_all:
-        with open(r"C:\systematic\shru_strat\yfinance\{}\all_constituents.pkl".format(index), "rb") as fp:   # Unpickling
+        with open(r"C:\E\yfinance\{}\all_constituents.pkl".format(index), "rb") as fp:   # Unpickling
             index_constituents = pickle.load(fp)
-    with open(r"C:\systematic\shru_strat\yfinance\{}\latest_constituents.pkl".format(index), "rb") as fp:   # Unpickling
+    with open(r"C:\E\yfinance\{}\latest_constituents.pkl".format(index), "rb") as fp:   # Unpickling
         index_constituents = pickle.load(fp)
               
     return sorted([i for i in index_constituents if type(i) == str])
 
 def get_stock_data(ticker, index = 'sp500', timeframe='1D'):
-    return pd.read_csv(r"C:\systematic\shru_strat\yfinance\{}\{}\{}.csv".format(index, timeframe, ticker)).rename(columns={'Unnamed: 0': 'Datetime'}).set_index('Datetime')
+    return pd.read_csv(r"C:\E\yfinance\{}\{}\{}.csv".format(index, timeframe, ticker)).rename(columns={'Unnamed: 0': 'Datetime'}).set_index('Datetime')
     
     
 def get_stock_data_without_index_axis(ticker, index = 'sp500', timeframe='1H'):
         if timeframe in ('1D', '1m') :
-            return pd.read_csv(r"C:\systematic\shru_strat\yfinance\{}\{}\{}.csv"
+            return pd.read_csv(r"C:\E\yfinance\{}\{}\{}.csv"
                        .format(index, timeframe, ticker))
-        return pd.read_csv(r"C:\systematic\shru_strat\yfinance\{}\{}\{}.csv"
+        return pd.read_csv(r"C:\E\yfinance\{}\{}\{}.csv"
                        .format(index, timeframe, ticker)).rename(columns={'Unnamed: 0': 'Timestamp'})
 
 def get_stock_data_by_year(stock, index = 'sp500', required_years = 2013):
