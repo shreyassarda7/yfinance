@@ -69,7 +69,7 @@ def get_hourly_data(stock):
     data = data.reset_index()
 
     if data.empty:
-        logging.error(f'No hourly data for {stock} from {start} to {end}.')
+        logging.warning(f'No hourly data for {stock} from {start} to {end}.')
         return pd.DataFrame()
 
     data['Date'] = data['Timestamp'].dt.date
@@ -86,16 +86,19 @@ def add_hourly_data(stock, index):
         last_date = data['Date'].iloc[-1]
 
         prev_data = data.loc[data['Date'] < last_date]
-        new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
-
-        final_data = pd.concat([prev_data, new_data])
+        if data_to_add.empty:
+            final_data = prev_data
+            logging.error(f"No new data available for {stock_head}. The symbol might be delisted.")
+        else:
+            new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
+            final_data = pd.concat([prev_data, new_data])
 
         final_data.to_csv(f"./{index}/1H/{stock_head}.csv", mode='w', header=True)
         logging.info(f"Updating hourly data for index: '{index}', stock: '{stock_head}'")
     except FileNotFoundError:
         """data = get_hourly_data(stock)
         data.to_csv(f"./{index}/1H/{stock_head}.csv", mode='w', header=True)"""
-        logging.error(f"Hourly data not added for index: '{index}', stock: '{stock_head}'")
+        logging.warning(f"Hourly data not added for index: '{index}', stock: '{stock_head}'")
     return
 
 
@@ -112,7 +115,7 @@ def get_5_minutewise_data(stock):
     data = data.reset_index()
 
     if data.empty:
-        logging.error(f'No 5 minutewise data for {stock} from {start} to {end}.')
+        logging.warning(f'No 5 minutewise data for {stock} from {start} to {end}.')
         return pd.DataFrame()
 
     data['Date'] = data['Timestamp'].dt.date
@@ -129,16 +132,19 @@ def add_5_minutewise_data(stock, index):
         last_date = data['Date'].iloc[-1]
 
         prev_data = data.loc[data['Date'] < last_date]
-        new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
-
-        final_data = pd.concat([prev_data, new_data])
+        if data_to_add.empty:
+            final_data = prev_data
+            logging.error(f"No new data available for {stock_head}. The symbol might be delisted.")
+        else:
+            new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
+            final_data = pd.concat([prev_data, new_data])
 
         final_data.to_csv(f"./{index}/5m/{stock_head}.csv", mode='w', header=True)
         logging.info(f"Updating 5 minutewise data for index: '{index}', stock: '{stock_head}'")
     except FileNotFoundError:
         """data = get_5_minutewise_data(stock)
         data.to_csv(f"./{index}/5m/{stock_head}.csv", mode='w', header=True)"""
-        logging.error(f"5 minutewise data not added for index: '{index}', stock: '{stock_head}'")
+        logging.warning(f"5 minutewise data not added for index: '{index}', stock: '{stock_head}'")
     return
 
 
@@ -151,7 +157,7 @@ def get_minutewise_data(stock):
     data = ticker.history(start=last_start_date, end=last_end_date, interval="1m")
 
     if data.empty:
-        logging.error(f'No data for {stock} from {last_start_date} to {last_end_date}.')
+        logging.warning(f'No data for {stock} from {last_start_date} to {last_end_date}.')
 
     data.index.names = ['Timestamp']
     data = data.reset_index()
@@ -162,7 +168,7 @@ def get_minutewise_data(stock):
         data_to_add = ticker.history(start=new_start_date, end=new_end_date, interval="1m")
 
         if data_to_add.empty:
-            logging.error(f'No data for {stock} from {new_start_date} to {new_end_date}.')
+            logging.warning(f'No data for {stock} from {new_start_date} to {new_end_date}.')
             continue
 
         data_to_add.index.names = ['Timestamp']
@@ -170,7 +176,7 @@ def get_minutewise_data(stock):
         data = pd.concat([data, data_to_add], axis=0)
 
     if data.empty:
-        logging.error(f'No data for {stock} from {last_start_date} to {new_end_date}.')
+        logging.warning(f'No data for {stock} from {last_start_date} to {new_end_date}.')
         return pd.DataFrame()
 
     data['Date'] = data['Timestamp'].dt.date
@@ -187,16 +193,19 @@ def add_minutewise_data(stock, index):
         last_date = data['Date'].iloc[-1]
 
         prev_data = data.loc[data['Date'] < last_date]
-        new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
-
-        final_data = pd.concat([prev_data, new_data])
+        if data_to_add.empty:
+            final_data = prev_data
+            logging.error(f"No new data available for {stock_head} after {last_date}. The symbol might be delisted.")
+        else:
+            new_data = data_to_add.loc[data_to_add['Date'] >= last_date]
+            final_data = pd.concat([prev_data, new_data])
 
         final_data.to_csv(f"./{index}/1m/{stock_head}.csv", mode='w', header=True)
         logging.info(f"Updating minutewise data for index: '{index}', stock: '{stock_head}'")
     except FileNotFoundError:
         """data = get_minutewise_data(stock)
         data.to_csv(f"./{index}/1m/{stock_head}.csv", mode='w', header=True)"""
-        logging.error(f"Minutewise data not added for index: '{index}', stock: '{stock_head}'")
+        logging.warning(f"Minutewise data not added for index: '{index}', stock: '{stock_head}'")
     return
 
 
@@ -205,10 +214,15 @@ if __name__ == '__main__':
     ### Download Nifty indices stock data
 
     for index, component in nifty_str_convert_dict.items():
+        print(index)
+        print('_____________________________________________________________________________')
         for ticker in component:
-            # add_hourly_data(ticker, index)
-            # add_5_minutewise_data(ticker, index)
+            print(ticker)
+            add_hourly_data(ticker, index)
+            add_5_minutewise_data(ticker, index)
             add_minutewise_data(ticker, index)
+        print('_____________________________________________________________________________')
+
 
     ### Download Global indices stock data
 
